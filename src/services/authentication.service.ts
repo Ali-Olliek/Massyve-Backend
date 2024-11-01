@@ -1,12 +1,14 @@
 import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import User from '../models/user';
+import { UserModel, IUser } from '../models/User';
 import JWTConfig from '../configs/jwt';
+import { AuthenticatedRequest } from '../utils/classes/Request';
+import { ObjectId, Document, HydratedDocument } from 'mongoose';
 
 interface IPayload extends JwtPayload {}
 
 export interface IPayloadRes extends IPayload {
-  userId: string;
+  userId: string | ObjectId;
 }
 
 export interface IPayloadReq extends IPayload {
@@ -14,14 +16,18 @@ export interface IPayloadReq extends IPayload {
   token: string;
 }
 
-interface TokenResponse {
+interface ILoginResponse {
   accessToken: string;
   refreshToken: string;
+  user: Partial<IUser>;
 }
 
-const login = async (email: string, password: string): Promise<TokenResponse> => {
+const login = async (
+  email: string,
+  password: string
+): Promise<ILoginResponse> => {
   // Find User
-  const user = await User.findOne({ email: email });
+  const user = await UserModel.findOne({ email: email });
 
   if (!user) throw new Error("User doesn't exist");
 
@@ -32,11 +38,11 @@ const login = async (email: string, password: string): Promise<TokenResponse> =>
 
   // Create JWT Tokens
   const accessToken = await _createToken(
-    { userId: user._id.toString() },
+    { userId: user.id },
     JWTConfig.expiry.access
   );
   const refreshToken = await _createToken(
-    { userId: user._id.toString() },
+    { userId: user.id },
     JWTConfig.expiry.refresh
   );
 
@@ -44,13 +50,17 @@ const login = async (email: string, password: string): Promise<TokenResponse> =>
 
   await user.save();
 
-  return { accessToken, refreshToken };
+  return {
+    accessToken,
+    refreshToken,
+    user: { id: user._id, username: user.username, email: user.email },
+  };
 };
 
 const signup = async (email: string, password: string, username: string) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = new User({
+  const user = new UserModel({
     username: username,
     email: email,
     password: hashedPassword,
@@ -59,26 +69,23 @@ const signup = async (email: string, password: string, username: string) => {
   await user.save();
 };
 
-const refreshToken = async (token: string) => {
+const refreshToken = async ({ token, userId }: AuthenticatedRequest) => {
   try {
-    const decoded = jwt.verify(token, JWTConfig.key);
+    const actualUserId =
+      typeof userId === 'object' && 'userId' in userId ? userId.userId : userId;
 
-    if (typeof decoded !== 'object' || !('userId' in decoded)) {
-      throw new Error('Invalid refresh token');
-    }
-
-    const user = await User.findById(decoded.userId);
+    const user = await UserModel.findById(actualUserId);
 
     if (!user || user.refreshToken !== token) {
       throw new Error('Invalid refresh token');
     }
 
     const newAccessToken = await _createToken(
-      { userId: user._id.toString() },
+      { userId: user.id },
       JWTConfig.expiry.access
     );
 
-    return { accessToken: newAccessToken };
+    return newAccessToken;
   } catch (error) {
     console.error(error);
     throw new Error('Could not refresh token');
