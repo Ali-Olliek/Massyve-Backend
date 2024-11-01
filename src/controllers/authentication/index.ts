@@ -10,14 +10,18 @@ const login = async (req: Request, res: Response): Promise<any> => {
   try {
     const { email, password } = req.body;
 
-    const { accessToken, refreshToken } = await authService.login(
+    const { accessToken, refreshToken, user } = await authService.login(
       email,
       password
     );
 
     return SuccessResponse({
       res: res,
-      data: { accessToken: accessToken, refreshToken: refreshToken },
+      data: {
+        user: user,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      },
       code: 201,
     });
   } catch (error) {
@@ -52,12 +56,7 @@ const refreshToken = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { token } = req;
-
-    // By here the token should be provided
-    if (!token) throw new Error('Access Denied');
-
-    const refreshedToken = authService.refreshToken(token);
+    const refreshedToken = await authService.refreshToken(req);
 
     return SuccessResponse({ res: res, data: { accessToken: refreshedToken } });
   } catch (error) {
