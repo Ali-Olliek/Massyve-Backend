@@ -15,5 +15,5 @@ mongoose
 
 
 app.listen(selectedConfig.port, ()=> {
-    console.log(`Example app listening to http://localhost:${selectedConfig.port}`)
+    console.log(`App listening to http://localhost:${selectedConfig.port}`);
 })
