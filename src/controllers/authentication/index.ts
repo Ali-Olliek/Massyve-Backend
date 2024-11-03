@@ -10,18 +10,11 @@ const login = async (req: Request, res: Response): Promise<any> => {
   try {
     const { email, password } = req.body;
 
-    const { accessToken, refreshToken, user } = await authService.login(
-      email,
-      password
-    );
+    const { user } = await authService.login(email, password);
 
     return SuccessResponse({
       res: res,
-      data: {
-        user: user,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      },
+      data: user,
       code: 201,
     });
   } catch (error) {

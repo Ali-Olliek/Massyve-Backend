@@ -17,8 +17,6 @@ export interface IPayloadReq extends IPayload {
 }
 
 interface ILoginResponse {
-  accessToken: string;
-  refreshToken: string;
   user: Partial<IUser>;
 }
 
@@ -51,9 +49,13 @@ const login = async (
   await user.save();
 
   return {
-    accessToken,
-    refreshToken,
-    user: { id: user._id, username: user.username, email: user.email },
+    user: {
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      refreshToken: refreshToken,
+      accessToken: accessToken,
+    },
   };
 };
 
