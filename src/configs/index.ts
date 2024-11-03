@@ -1,3 +1,5 @@
-import selectedConfig from "./app";
+import appConfig from './app';
+import JWTConfig from './jwt';
+import CorsConfig from './cors';
 
-export {selectedConfig}
+export { appConfig, JWTConfig, CorsConfig };
