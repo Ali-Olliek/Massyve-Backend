@@ -1,0 +1,14 @@
+To run the project locally:
+- Clone the repository onto your local machine using `git clone https://github.com/Ali-Olliek/Massyve-Backend`
+- Change directory to the cloned repository `cd Massyve-Backend`
+- Run `npm install` to install all required dependencies.
+- Copy `.env.example` and rename it to `.env`.
+- Fill out the different fields in `.env`:
+  - `JWT_KEY`: Any random string of your choice.
+  - `DB_CONNECTION_STRING`: a valid MongoDB connection string, or contact me at ali.olliek.dev@gmail.com to provide the MongoDB Atlas connection string.
+  - `NODE_ENV`: either `development` or `production`
+  - `PORT`: Specify the port on which to run the server.
+  - `CORS_DEV`: Specify the valid development origins — comma separated. use these for local development `http://localhost:3000,http://localhost:3001,http://127.0.0.1:3001,http://127.0.0.1:3000`
+  - `CORS_PROD`: Specify the valid production origins — comma separated.
+- Finally run `npx tsc` to compile the Typescript code into Javascript.
+- Then `node dist/app.js` to run the server.
